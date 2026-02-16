@@ -1,51 +1,59 @@
 export default async function handler(req, res) {
 
-    if(req.method !== "POST"){
-        return res.status(405).json({error:"POST only"});
-    }
+if(req.method !== "POST"){
+return res.status(405).json({error:"POST only"});
+}
 
-    try{
+try{
 
-        const {numbers} = req.body;
+const {numbers} = req.body;
 
-        if(!numbers || numbers.length === 0){
-            return res.status(400).json({error:"No numbers provided"});
-        }
+const active=[];
+const inactive=[];
+const banned=[];
 
-        const results = await Promise.all(
+await Promise.all(
 
-            numbers.map(async (num)=>{
+numbers.map(async num=>{
 
-                try{
+try{
 
-                    const response = await fetch(
-                        `https://api.maytapi.com/api/6c9a3a02-bf25-485f-9b86-70283df4ca46/132538/screen?token=${process.env.MAYTAPI_TOKEN}&phone=${num}`
-                    );
+const response = await fetch(
+`https://api.maytapi.com/api/6c9a3a02-bf25-485f-9b86-70283df4ca46/132538/screen?token=${process.env.MAYTAPI_TOKEN}&phone=${num}`
+);
 
-                    const data = await response.json();
+const data = await response.json();
 
-                    return {
-                        number:num,
-                        status:data.success ? "✅ Active" : "❌ Not WhatsApp"
-                    };
+if(data?.success){
+active.push(num);
+}
+else if(data?.message?.toLowerCase().includes("banned")){
+banned.push(num);
+}
+else{
+inactive.push(num);
+}
 
-                }catch{
-                    return {
-                        number:num,
-                        status:"⚠️ Error"
-                    };
-                }
+}catch{
+inactive.push(num);
+}
 
-            })
-        );
+})
 
-        res.status(200).json(results);
+);
 
-    }catch(err){
+res.status(200).json({
+active,
+inactive,
+banned
+});
 
-        res.status(500).json({
-            error:"Server Error",
-            message:err.message
-        });
-    }
-    }
+}catch(err){
+
+res.status(500).json({
+error:"server crash",
+message:err.message
+});
+
+}
+            }
