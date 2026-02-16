@@ -1,34 +1,69 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>WhatsApp Checker</title>
+<title>NONAMEHACKER WhatsApp Checker 💀</title>
 
 <style>
 
 body{
 font-family:Arial;
-max-width:700px;
+max-width:900px;
 margin:auto;
-padding:40px;
+padding:30px;
+background:#020617;
+color:white;
+}
+
+h1{
+text-align:center;
 }
 
 textarea{
 width:100%;
-height:220px;
+height:180px;
+padding:10px;
+border-radius:8px;
+border:none;
 }
 
 button{
 padding:12px;
-width:100%;
-background:black;
-color:white;
 border:none;
 margin-top:10px;
 cursor:pointer;
+font-weight:bold;
+border-radius:8px;
 }
 
-li{
-margin:6px 0;
+.check{
+background:#22c55e;
+width:100%;
+}
+
+.download{
+background:#38bdf8;
+margin-right:10px;
+}
+
+.box{
+margin-top:25px;
+padding:15px;
+border-radius:12px;
+}
+
+.active{background:#052e16;}
+.inactive{background:#3f0d0d;}
+.banned{background:#3b0764;}
+
+footer{
+margin-top:50px;
+text-align:center;
+opacity:.8;
+}
+
+a{
+color:#38bdf8;
+text-decoration:none;
 }
 
 </style>
@@ -36,36 +71,97 @@ margin:6px 0;
 
 <body>
 
-<h2>WhatsApp Checker 🔥</h2>
+<h1>🚀 NONAMEHACKER WhatsApp Checker 💀</h1>
 
-<textarea id="numbers"
-placeholder="923001234567&#10;923111234567"></textarea>
+<input type="file" id="file">
 
-<button onclick="checkNumbers()">Check Numbers</button>
+<p>OR paste numbers:</p>
 
-<h3 id="loading"></h3>
+<textarea id="numbers" placeholder="923xxxxxxxxx"></textarea>
 
-<ul id="results"></ul>
+<button class="check" onclick="checkNumbers()">CHECK NOW</button>
+
+<h3 id="status"></h3>
+
+<div class="box active">
+<h2>✅ Active (<span id="ac">0</span>)</h2>
+<button class="download" onclick="download(active,'active.txt')">Download</button>
+<ul id="active"></ul>
+</div>
+
+<div class="box inactive">
+<h2>❌ Not WhatsApp (<span id="in">0</span>)</h2>
+<button class="download" onclick="download(inactive,'inactive.txt')">Download</button>
+<ul id="inactive"></ul>
+</div>
+
+<div class="box banned">
+<h2>🚫 Banned (<span id="ba">0</span>)</h2>
+<button class="download" onclick="download(banned,'banned.txt')">Download</button>
+<ul id="banned"></ul>
+</div>
+
+
+<footer>
+
+<hr>
+
+<p>⚡ Powered by <b>NONAMEHACKER 💀</b></p>
+
+<p>
+📞 Contact:
+<a href="https://wa.me/923107260507">
++92 310 7260507
+</a>
+</p>
+
+</footer>
+
 
 <script>
 
+let active=[];
+let inactive=[];
+let banned=[];
+
+
+// CSV Upload
+document.getElementById("file").addEventListener("change",function(e){
+
+const reader=new FileReader();
+
+reader.onload=function(event){
+
+document.getElementById("numbers").value=
+event.target.result
+.split(/,|\\n/)
+.join("\\n");
+
+};
+
+reader.readAsText(e.target.files[0]);
+
+});
+
+
 async function checkNumbers(){
 
-const nums = document
-.getElementById("numbers")
+let nums=document.getElementById("numbers")
 .value
-.split("\n")
+.split("\\n")
 .map(n=>n.trim())
 .filter(Boolean);
 
-if(nums.length === 0){
-alert("Enter numbers first");
+if(nums.length===0){
+alert("Add numbers first!");
 return;
 }
 
-document.getElementById("loading").innerText="Checking... ⏳";
+document.getElementById("status").innerText=
+"Checking "+nums.length+" numbers... ⏳";
 
-const res = await fetch("/api/check",{
+
+const res=await fetch("/api/check",{
 method:"POST",
 headers:{
 "Content-Type":"application/json"
@@ -73,21 +169,51 @@ headers:{
 body:JSON.stringify({numbers:nums})
 });
 
-const data = await res.json();
+const data=await res.json();
 
-document.getElementById("loading").innerText="Done ✅";
+active=data.active;
+inactive=data.inactive;
+banned=data.banned;
 
-const list = document.getElementById("results");
+render();
 
-list.innerHTML="";
+document.getElementById("status").innerText="DONE ✅";
 
-data.forEach(r=>{
-list.innerHTML += `<li>${r.number} → ${r.status}</li>`;
-});
+}
+
+
+
+function render(){
+
+document.getElementById("ac").innerText=active.length;
+document.getElementById("in").innerText=inactive.length;
+document.getElementById("ba").innerText=banned.length;
+
+document.getElementById("active").innerHTML=
+active.map(n=>`<li>${n}</li>`).join("");
+
+document.getElementById("inactive").innerHTML=
+inactive.map(n=>`<li>${n}</li>`).join("");
+
+document.getElementById("banned").innerHTML=
+banned.map(n=>`<li>${n}</li>`).join("");
+
+}
+
+
+
+function download(list,filename){
+
+const blob=new Blob([list.join("\\n")]);
+const a=document.createElement("a");
+
+a.href=URL.createObjectURL(blob);
+a.download=filename;
+a.click();
 
 }
 
 </script>
 
 </body>
-</html>
+  </html>
